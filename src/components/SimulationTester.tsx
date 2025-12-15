@@ -9,7 +9,7 @@ import {
   ConversationState,
   AnalysisResult 
 } from '@/types/simulation';
-import { sendSimulationMessage, analyzeSimulation, sendClassicChatMessage } from '@/lib/api';
+import { sendSimulationMessage, analyzeSimulation, sendClassicChatMessage, sendSimulationAudio } from '@/lib/api';
 import { ConfigHeader } from './ConfigHeader';
 import { ModeSelector } from './ModeSelector';
 import { ChatArea } from './ChatArea';
@@ -121,6 +121,62 @@ export function SimulationTester() {
     }
   }, [config, currentMode, simulationType, conversationState.conversationId, classicChatId, validateConfig]);
 
+  const handleSendAudio = useCallback(async (audioBlob: Blob) => {
+    if (!validateConfig()) return;
+    if (currentMode !== 'simulation') {
+      toast({ title: 'Erreur', description: 'Le mode audio n\'est disponible qu\'en simulation', variant: 'destructive' });
+      return;
+    }
+
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: '🎤 Message vocal envoyé',
+      timestamp: new Date(),
+      isAudioMessage: true,
+    };
+
+    setConversationState(prev => ({
+      ...prev,
+      messages: [...prev.messages, userMessage],
+      isLoading: true,
+    }));
+
+    try {
+      const response = await sendSimulationAudio(
+        config,
+        audioBlob,
+        simulationType,
+        conversationState.conversationId
+      );
+
+      const audioUrl = URL.createObjectURL(response.audioBlob);
+
+      const aiMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: '', // Audio response - no text content
+        timestamp: new Date(),
+        audioUrl,
+      };
+
+      setConversationState(prev => ({
+        ...prev,
+        messages: [...prev.messages, aiMessage],
+        conversationId: response.conversationId,
+        isLoading: false,
+      }));
+    } catch (error) {
+      console.error('Error sending audio:', error);
+      toast({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Erreur lors de l\'envoi de l\'audio',
+        variant: 'destructive',
+      });
+      setConversationState(prev => ({ ...prev, isLoading: false }));
+    }
+  }, [config, currentMode, simulationType, conversationState.conversationId, validateConfig]);
+
   const handleAnalyze = useCallback(async () => {
     if (!conversationState.conversationId) {
       toast({ title: 'Erreur', description: 'Aucune conversation à analyser', variant: 'destructive' });
@@ -222,6 +278,7 @@ export function SimulationTester() {
             messages={conversationState.messages}
             isLoading={conversationState.isLoading}
             onSendMessage={handleSendMessage}
+            onSendAudio={currentMode === 'simulation' ? handleSendAudio : undefined}
             placeholder={getPlaceholder()}
           />
         </div>

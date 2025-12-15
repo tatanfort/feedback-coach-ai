@@ -45,6 +45,50 @@ export async function sendSimulationMessage(
   });
 }
 
+export interface AudioSimulationResponse {
+  conversationId: string;
+  audioBlob: Blob;
+}
+
+export async function sendSimulationAudio(
+  config: SimulationConfig,
+  audioBlob: Blob,
+  simulationType: SimulationType,
+  conversationId: string | null
+): Promise<AudioSimulationResponse> {
+  const url = `${config.apiBaseUrl}/chatbot/api/v1/simulation/chat`;
+  
+  const formData = new FormData();
+  formData.append('file', audioBlob, 'recording.webm');
+  formData.append('user_application_id', config.myUserId);
+  formData.append('counterpart_user_id', config.counterpartUserId);
+  formData.append('simulation_type', simulationType);
+  if (conversationId) {
+    formData.append('conversation_id', conversationId);
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-API-Key': config.apiKey,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    throw new ApiError(response.status, `API Error (${response.status}): ${errorText}`);
+  }
+
+  const newConversationId = response.headers.get('X-Conversation-Id') || conversationId || '';
+  const audioResponseBlob = await response.blob();
+
+  return {
+    conversationId: newConversationId,
+    audioBlob: audioResponseBlob,
+  };
+}
+
 export async function analyzeSimulation(
   config: SimulationConfig,
   conversationId: string
