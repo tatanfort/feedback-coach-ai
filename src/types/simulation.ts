@@ -11,6 +11,8 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  audioUrl?: string; // URL for audio playback (assistant responses)
+  isAudioMessage?: boolean; // Whether this was sent as audio
 }
 
 export interface SimulationConfig {
