@@ -74,7 +74,7 @@ export function SidePanel({
             variant="success"
             className="w-full justify-start"
             onClick={onAnalyze}
-            disabled={!conversationId || isAnalyzing || messagesCount === 0}
+            disabled={!conversationId || isAnalyzing}
           >
             {isAnalyzing ? (
               <Loader2 className="h-4 w-4 animate-spin" />
