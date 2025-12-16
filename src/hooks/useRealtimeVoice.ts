@@ -230,9 +230,10 @@ export function useRealtimeVoice({
           const data = JSON.parse(event.data);
           console.log('WS message type:', data.type);
           
-          // Handle conversation ID from session
-          if (data.type === 'session.created' && data.session?.id) {
-            onConversationIdChange?.(data.session.id);
+          // Handle conversation ID from backend
+          if (data.type === 'conversation.created' && data.conversation_id) {
+            console.log('Received conversation_id:', data.conversation_id);
+            onConversationIdChange?.(data.conversation_id);
           }
           
           // Handle audio delta
