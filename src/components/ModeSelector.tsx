@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SimulationMode, SimulationType } from '@/types/simulation';
-import { Drama, BarChart3, MessageCircle } from 'lucide-react';
+import { Drama, BarChart3, MessageCircle, Phone } from 'lucide-react';
 
 interface ModeSelectorProps {
   currentMode: SimulationMode;
@@ -26,7 +26,7 @@ export function ModeSelector({
   return (
     <div className="bg-card border-b border-border px-6 py-3">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant={currentMode === 'simulation' ? 'modeActive' : 'mode'}
             onClick={() => onModeChange('simulation')}
@@ -34,6 +34,14 @@ export function ModeSelector({
           >
             <Drama className="h-4 w-4" />
             Simulation
+          </Button>
+          <Button
+            variant={currentMode === 'realtime' ? 'modeActive' : 'mode'}
+            onClick={() => onModeChange('realtime')}
+            className="flex-1 sm:flex-none"
+          >
+            <Phone className="h-4 w-4" />
+            Temps Réel
           </Button>
           <Button
             variant={currentMode === 'analysis' ? 'modeActive' : 'mode'}

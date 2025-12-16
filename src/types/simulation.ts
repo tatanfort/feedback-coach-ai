@@ -1,4 +1,4 @@
-export type SimulationMode = 'simulation' | 'analysis' | 'chat';
+export type SimulationMode = 'simulation' | 'analysis' | 'chat' | 'realtime';
 
 export type SimulationType = 
   | 'manager_feedback' 
