@@ -29,6 +29,7 @@ export function SidePanel({
 }: SidePanelProps) {
   const modeLabels: Record<SimulationMode, string> = {
     simulation: 'Simulation',
+    realtime: 'Temps Réel',
     analysis: 'Analyse',
     chat: 'Chat Classique',
   };

@@ -14,6 +14,8 @@ import { ConfigHeader } from './ConfigHeader';
 import { ModeSelector } from './ModeSelector';
 import { ChatArea } from './ChatArea';
 import { SidePanel } from './SidePanel';
+import { RealtimeVoicePanel } from './RealtimeVoicePanel';
+import { useRealtimeVoice } from '@/hooks/useRealtimeVoice';
 import { Drama } from 'lucide-react';
 
 const defaultConfig: SimulationConfig = {
@@ -36,6 +38,18 @@ export function SimulationTester() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [classicChatId] = useState(() => crypto.randomUUID());
 
+  // Realtime voice hook
+  const handleRealtimeConversationIdChange = useCallback((id: string) => {
+    setConversationState(prev => ({ ...prev, conversationId: id }));
+  }, []);
+
+  const realtimeVoice = useRealtimeVoice({
+    config,
+    simulationType,
+    conversationId: conversationState.conversationId,
+    onConversationIdChange: handleRealtimeConversationIdChange,
+  });
+
   const validateConfig = useCallback(() => {
     if (!config.apiBaseUrl.trim()) {
       toast({ title: 'Erreur', description: 'Veuillez renseigner l\'URL de l\'API', variant: 'destructive' });
@@ -49,7 +63,7 @@ export function SimulationTester() {
       toast({ title: 'Erreur', description: 'Veuillez renseigner votre User ID', variant: 'destructive' });
       return false;
     }
-    if (currentMode === 'simulation' && !config.counterpartUserId.trim()) {
+    if ((currentMode === 'simulation' || currentMode === 'realtime') && !config.counterpartUserId.trim()) {
       toast({ title: 'Erreur', description: 'Veuillez renseigner le Counterpart User ID', variant: 'destructive' });
       return false;
     }
@@ -272,15 +286,29 @@ export function SimulationTester() {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Chat Area */}
+        {/* Chat Area or Realtime Panel */}
         <div className="flex-1 lg:flex-[2]">
-          <ChatArea
-            messages={conversationState.messages}
-            isLoading={conversationState.isLoading}
-            onSendMessage={handleSendMessage}
-            onSendAudio={currentMode === 'simulation' ? handleSendAudio : undefined}
-            placeholder={getPlaceholder()}
-          />
+          {currentMode === 'realtime' ? (
+            <RealtimeVoicePanel
+              status={realtimeVoice.status}
+              error={realtimeVoice.error}
+              isConnected={realtimeVoice.isConnected}
+              onConnect={() => {
+                if (validateConfig()) {
+                  realtimeVoice.connect();
+                }
+              }}
+              onDisconnect={realtimeVoice.disconnect}
+            />
+          ) : (
+            <ChatArea
+              messages={conversationState.messages}
+              isLoading={conversationState.isLoading}
+              onSendMessage={handleSendMessage}
+              onSendAudio={currentMode === 'simulation' ? handleSendAudio : undefined}
+              placeholder={getPlaceholder()}
+            />
+          )}
         </div>
 
         {/* Side Panel */}
