@@ -188,6 +188,7 @@ export function useRealtimeVoice({
         user_application_id: config.myUserId,
         counterpart_user_id: config.counterpartUserId,
         simulation_type: simulationType,
+        api_key: config.apiKey,
         ...(conversationId && { conversation_id: conversationId }),
       });
       
