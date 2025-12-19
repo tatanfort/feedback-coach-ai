@@ -124,3 +124,45 @@ export async function sendClassicChatMessage(
     }),
   });
 }
+
+export async function sendClassicChatAudio(
+  config: SimulationConfig,
+  audioBlob: Blob,
+  userConversationId: string
+): Promise<{ message: string }> {
+  const url = `${config.apiBaseUrl}/chatbot/api/v2/chat`;
+  
+  const formData = new FormData();
+  
+  // Append the audio file
+  formData.append('file', audioBlob, 'voice_message.webm');
+  
+  // Append the JSON payload
+  const chatPayload = {
+    userApplicationId: config.myUserId,
+    userConversationId,
+    messageApplicationId: crypto.randomUUID(),
+    sender: 'user',
+    type: 'text',
+    message: '', // Empty, will be filled by transcription
+    locale: 'fr',
+    data: {},
+  };
+  
+  formData.append('payload', JSON.stringify(chatPayload));
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-API-Key': config.apiKey,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    throw new ApiError(response.status, `API Error (${response.status}): ${errorText}`);
+  }
+
+  return response.json();
+}
