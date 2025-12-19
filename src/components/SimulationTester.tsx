@@ -9,7 +9,7 @@ import {
   ConversationState,
   AnalysisResult 
 } from '@/types/simulation';
-import { sendSimulationMessage, analyzeSimulation, sendClassicChatMessage, sendSimulationAudio } from '@/lib/api';
+import { sendSimulationMessage, analyzeSimulation, sendClassicChatMessage, sendClassicChatAudio, sendSimulationAudio } from '@/lib/api';
 import { ConfigHeader } from './ConfigHeader';
 import { ModeSelector } from './ModeSelector';
 import { ChatArea } from './ChatArea';
@@ -146,10 +146,6 @@ export function SimulationTester() {
 
   const handleSendAudio = useCallback(async (audioBlob: Blob) => {
     if (!validateConfig()) return;
-    if (currentMode !== 'simulation') {
-      toast({ title: 'Erreur', description: 'Le mode audio n\'est disponible qu\'en simulation', variant: 'destructive' });
-      return;
-    }
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -166,29 +162,55 @@ export function SimulationTester() {
     }));
 
     try {
-      const response = await sendSimulationAudio(
-        config,
-        audioBlob,
-        simulationType,
-        conversationState.conversationId
-      );
+      if (currentMode === 'simulation') {
+        const response = await sendSimulationAudio(
+          config,
+          audioBlob,
+          simulationType,
+          conversationState.conversationId
+        );
 
-      const audioUrl = URL.createObjectURL(response.audioBlob);
+        const audioUrl = URL.createObjectURL(response.audioBlob);
 
-      const aiMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: '', // Audio response - no text content
-        timestamp: new Date(),
-        audioUrl,
-      };
+        const aiMessage: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: '', // Audio response - no text content
+          timestamp: new Date(),
+          audioUrl,
+        };
 
-      setConversationState(prev => ({
-        ...prev,
-        messages: [...prev.messages, aiMessage],
-        conversationId: response.conversationId,
-        isLoading: false,
-      }));
+        setConversationState(prev => ({
+          ...prev,
+          messages: [...prev.messages, aiMessage],
+          conversationId: response.conversationId,
+          isLoading: false,
+        }));
+      } else if (currentMode === 'chat') {
+        const response = await sendClassicChatAudio(config, audioBlob, classicChatId);
+        console.log('Classic chat audio response:', response);
+
+        // Handle various response formats from the API
+        const responseText = 
+          response.message || 
+          (response as any).content || 
+          (response as any).text || 
+          (response as any).response ||
+          JSON.stringify(response);
+
+        const aiMessage: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: responseText,
+          timestamp: new Date(),
+        };
+
+        setConversationState(prev => ({
+          ...prev,
+          messages: [...prev.messages, aiMessage],
+          isLoading: false,
+        }));
+      }
     } catch (error) {
       console.error('Error sending audio:', error);
       toast({
@@ -198,7 +220,7 @@ export function SimulationTester() {
       });
       setConversationState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [config, currentMode, simulationType, conversationState.conversationId, validateConfig]);
+  }, [config, currentMode, simulationType, conversationState.conversationId, classicChatId, validateConfig]);
 
   const handleAnalyze = useCallback(async () => {
     if (!conversationState.conversationId) {
@@ -314,7 +336,7 @@ export function SimulationTester() {
               messages={conversationState.messages}
               isLoading={conversationState.isLoading}
               onSendMessage={handleSendMessage}
-              onSendAudio={currentMode === 'simulation' ? handleSendAudio : undefined}
+              onSendAudio={currentMode === 'simulation' || currentMode === 'chat' ? handleSendAudio : undefined}
               placeholder={getPlaceholder()}
             />
           )}
