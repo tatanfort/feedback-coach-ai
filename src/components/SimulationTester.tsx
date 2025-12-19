@@ -110,11 +110,20 @@ export function SimulationTester() {
         }));
       } else if (currentMode === 'chat') {
         const response = await sendClassicChatMessage(config, messageContent, classicChatId);
+        console.log('Classic chat response:', response);
+
+        // Handle various response formats from the API
+        const responseText = 
+          response.message || 
+          (response as any).content || 
+          (response as any).text || 
+          (response as any).response ||
+          JSON.stringify(response);
 
         const aiMessage: Message = {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: response.message,
+          content: responseText,
           timestamp: new Date(),
         };
 
