@@ -51,14 +51,8 @@ export interface SimulationChatResponse {
   is_simulation: boolean;
 }
 
-export interface AnalysisScores {
-  clarity_of_feedback: number;
-  balance: number;
-  specificity: number;
-  empathy_and_tone: number;
-  two_way_dialogue: number;
-  actionable_guidance: number;
-}
+// Dynamic scores - keys vary by simulation type
+export type AnalysisScores = Record<string, number>;
 
 export interface KeyMoment {
   moment: string;
