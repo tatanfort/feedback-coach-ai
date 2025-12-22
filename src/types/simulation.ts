@@ -11,8 +11,8 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  audioUrl?: string; // URL for audio playback (assistant responses)
-  isAudioMessage?: boolean; // Whether this was sent as audio
+  audioUrl?: string;
+  isAudioMessage?: boolean;
 }
 
 export interface SimulationConfig {
@@ -20,6 +20,28 @@ export interface SimulationConfig {
   apiKey: string;
   myUserId: string;
   counterpartUserId: string;
+}
+
+export interface EvaluationCriterion {
+  criterion: string;
+  description: string;
+}
+
+export interface SimulationContact {
+  name?: string;
+  role?: string;
+  department?: string;
+  personality?: string;
+  [key: string]: any;
+}
+
+export interface SimulationScenario {
+  simulation_id: string;
+  title_simulation: string;
+  contact: SimulationContact;
+  context: string;
+  objectives: string[];
+  evaluation_criteria: EvaluationCriterion[];
 }
 
 export interface SimulationChatResponse {
@@ -60,4 +82,5 @@ export interface ConversationState {
   conversationId: string | null;
   isLoading: boolean;
   analysisResult: AnalysisResult | null;
+  simulationScenario: SimulationScenario | null;
 }

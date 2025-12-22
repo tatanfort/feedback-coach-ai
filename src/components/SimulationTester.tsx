@@ -7,7 +7,7 @@ import {
   SimulationType, 
   Message, 
   ConversationState,
-  AnalysisResult 
+  SimulationScenario 
 } from '@/types/simulation';
 import { sendSimulationMessage, analyzeSimulation, sendClassicChatMessage, sendClassicChatAudio, sendSimulationAudio } from '@/lib/api';
 import { ConfigHeader } from './ConfigHeader';
@@ -34,6 +34,7 @@ export function SimulationTester() {
     conversationId: null,
     isLoading: false,
     analysisResult: null,
+    simulationScenario: null,
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [classicChatId] = useState(() => crypto.randomUUID());
@@ -92,7 +93,8 @@ export function SimulationTester() {
           config,
           messageContent,
           simulationType,
-          conversationState.conversationId
+          conversationState.conversationId,
+          conversationState.simulationScenario
         );
 
         const aiMessage: Message = {
@@ -167,7 +169,8 @@ export function SimulationTester() {
           config,
           audioBlob,
           simulationType,
-          conversationState.conversationId
+          conversationState.conversationId,
+          conversationState.simulationScenario
         );
 
         const audioUrl = URL.createObjectURL(response.audioBlob);
@@ -231,7 +234,7 @@ export function SimulationTester() {
 
     setIsAnalyzing(true);
     try {
-      const result = await analyzeSimulation(config, conversationState.conversationId);
+      const result = await analyzeSimulation(config, conversationState.conversationId, simulationType, conversationState.simulationScenario);
       setConversationState(prev => ({ ...prev, analysisResult: result }));
       setCurrentMode('analysis');
       toast({ title: 'Analyse terminée', description: 'Les résultats sont disponibles dans le panneau latéral.' });
@@ -253,6 +256,7 @@ export function SimulationTester() {
       conversationId: null,
       isLoading: false,
       analysisResult: null,
+      simulationScenario: null,
     });
     toast({ title: 'Conversation réinitialisée', description: 'Vous pouvez commencer une nouvelle simulation.' });
   }, []);
