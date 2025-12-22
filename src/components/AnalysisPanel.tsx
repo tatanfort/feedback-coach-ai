@@ -7,13 +7,11 @@ interface AnalysisPanelProps {
   analysis: AnalysisResult;
 }
 
-const scoreLabels: Record<string, string> = {
-  clarity_of_feedback: 'Clarté',
-  balance: 'Équilibre',
-  specificity: 'Précision',
-  empathy_and_tone: 'Empathie',
-  two_way_dialogue: 'Dialogue',
-  actionable_guidance: 'Actions',
+// Helper to format score keys into readable labels
+const formatScoreLabel = (key: string): string => {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
@@ -41,7 +39,7 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
                 score={score} 
                 size="sm" 
                 showLabel 
-                label={scoreLabels[key] || key} 
+                label={formatScoreLabel(key)} 
               />
             ))}
           </div>
