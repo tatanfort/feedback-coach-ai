@@ -1,4 +1,4 @@
-import { SimulationConfig, SimulationType, SimulationChatResponse, AnalysisResult } from '@/types/simulation';
+import { SimulationConfig, SimulationType, SimulationChatResponse, AnalysisResult, SimulationScenario } from '@/types/simulation';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -29,7 +29,8 @@ export async function sendSimulationMessage(
   config: SimulationConfig,
   message: string,
   simulationType: SimulationType,
-  conversationId: string | null
+  conversationId: string | null,
+  scenario: SimulationScenario | null
 ): Promise<SimulationChatResponse> {
   const url = `${config.apiBaseUrl}/chatbot/api/v1/simulation/chat`;
   
@@ -41,6 +42,7 @@ export async function sendSimulationMessage(
       message,
       simulation_type: simulationType,
       conversation_id: conversationId,
+      context: scenario || undefined,
     }),
   });
 }
@@ -54,18 +56,22 @@ export async function sendSimulationAudio(
   config: SimulationConfig,
   audioBlob: Blob,
   simulationType: SimulationType,
-  conversationId: string | null
+  conversationId: string | null,
+  scenario: SimulationScenario | null
 ): Promise<AudioSimulationResponse> {
   const url = `${config.apiBaseUrl}/chatbot/api/v1/simulation/chat`;
   
   const formData = new FormData();
   formData.append('file', audioBlob, 'recording.webm');
-  formData.append('user_application_id', config.myUserId);
-  formData.append('counterpart_user_id', config.counterpartUserId);
-  formData.append('simulation_type', simulationType);
-  if (conversationId) {
-    formData.append('conversation_id', conversationId);
-  }
+  
+  const payload = {
+    user_application_id: config.myUserId,
+    counterpart_user_id: config.counterpartUserId,
+    simulation_type: simulationType,
+    conversation_id: conversationId,
+    context: scenario || undefined,
+  };
+  formData.append('payload', JSON.stringify(payload));
 
   const response = await fetch(url, {
     method: 'POST',
@@ -91,14 +97,19 @@ export async function sendSimulationAudio(
 
 export async function analyzeSimulation(
   config: SimulationConfig,
-  conversationId: string
+  conversationId: string,
+  simulationType: SimulationType,
+  scenario: SimulationScenario | null
 ): Promise<AnalysisResult> {
   const url = `${config.apiBaseUrl}/chatbot/api/v1/simulation/analyze`;
   
   return fetchWithAuth(url, config, {
     method: 'POST',
     body: JSON.stringify({
+      user_application_id: config.myUserId,
+      simulation_type: simulationType,
       conversation_id: conversationId,
+      context: scenario || undefined,
     }),
   });
 }
