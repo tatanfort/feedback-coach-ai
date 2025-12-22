@@ -309,7 +309,12 @@ export function SimulationTester() {
       </header>
 
       {/* Config */}
-      <ConfigHeader config={config} onConfigChange={setConfig} />
+      <ConfigHeader 
+        config={config} 
+        onConfigChange={setConfig}
+        scenario={conversationState.simulationScenario}
+        onScenarioChange={(scenario) => setConversationState(prev => ({ ...prev, simulationScenario: scenario }))}
+      />
 
       {/* Mode Selector */}
       <ModeSelector
