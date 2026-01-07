@@ -29,6 +29,7 @@ export function SimulationTester() {
   const [config, setConfig] = useLocalStorage<SimulationConfig>('simulation-config', defaultConfig);
   const [currentMode, setCurrentMode] = useState<SimulationMode>('simulation');
   const [simulationType, setSimulationType] = useState<SimulationType>('manager_feedback');
+  const [socraticMode, setSocraticMode] = useState(false);
   const [conversationState, setConversationState] = useState<ConversationState>({
     messages: [],
     conversationId: null,
@@ -111,7 +112,7 @@ export function SimulationTester() {
           isLoading: false,
         }));
       } else if (currentMode === 'chat') {
-        const response = await sendClassicChatMessage(config, messageContent, classicChatId);
+        const response = await sendClassicChatMessage(config, messageContent, classicChatId, socraticMode);
         console.log('Classic chat response:', response);
 
         // Handle various response formats from the API
@@ -144,7 +145,7 @@ export function SimulationTester() {
       });
       setConversationState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [config, currentMode, simulationType, conversationState.conversationId, classicChatId, validateConfig]);
+  }, [config, currentMode, simulationType, conversationState.conversationId, classicChatId, socraticMode, validateConfig]);
 
   const handleSendAudio = useCallback(async (audioBlob: Blob) => {
     if (!validateConfig()) return;
@@ -190,7 +191,7 @@ export function SimulationTester() {
           isLoading: false,
         }));
       } else if (currentMode === 'chat') {
-        const response = await sendClassicChatAudio(config, audioBlob, classicChatId);
+        const response = await sendClassicChatAudio(config, audioBlob, classicChatId, socraticMode);
         console.log('Classic chat audio response:', response);
 
         // Handle various response formats from the API
@@ -223,7 +224,7 @@ export function SimulationTester() {
       });
       setConversationState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [config, currentMode, simulationType, conversationState.conversationId, classicChatId, validateConfig]);
+  }, [config, currentMode, simulationType, conversationState.conversationId, classicChatId, socraticMode, validateConfig]);
 
   const handleAnalyze = useCallback(async () => {
     if (!conversationState.conversationId) {
@@ -347,6 +348,9 @@ export function SimulationTester() {
               onSendMessage={handleSendMessage}
               onSendAudio={currentMode === 'simulation' || currentMode === 'chat' ? handleSendAudio : undefined}
               placeholder={getPlaceholder()}
+              showSocraticToggle={currentMode === 'chat'}
+              socraticMode={socraticMode}
+              onSocraticModeChange={setSocraticMode}
             />
           )}
         </div>

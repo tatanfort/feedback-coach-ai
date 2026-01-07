@@ -117,29 +117,37 @@ export async function analyzeSimulation(
 export async function sendClassicChatMessage(
   config: SimulationConfig,
   message: string,
-  userConversationId: string
+  userConversationId: string,
+  socraticTutoring: boolean = false
 ): Promise<{ message: string }> {
   const url = `${config.apiBaseUrl}/chatbot/api/v2/chat`;
   
+  const payload: Record<string, any> = {
+    userApplicationId: config.myUserId,
+    userConversationId,
+    messageApplicationId: crypto.randomUUID(),
+    sender: 'user',
+    type: 'text',
+    message,
+    locale: 'fr',
+    data: {},
+  };
+
+  if (socraticTutoring) {
+    payload.socratic_tutoring = true;
+  }
+
   return fetchWithAuth(url, config, {
     method: 'POST',
-    body: JSON.stringify({
-      userApplicationId: config.myUserId,
-      userConversationId,
-      messageApplicationId: crypto.randomUUID(),
-      sender: 'user',
-      type: 'text',
-      message,
-      locale: 'fr',
-      data: {},
-    }),
+    body: JSON.stringify(payload),
   });
 }
 
 export async function sendClassicChatAudio(
   config: SimulationConfig,
   audioBlob: Blob,
-  userConversationId: string
+  userConversationId: string,
+  socraticTutoring: boolean = false
 ): Promise<{ message: string }> {
   const url = `${config.apiBaseUrl}/chatbot/api/v2/chat`;
   
@@ -149,7 +157,7 @@ export async function sendClassicChatAudio(
   formData.append('file', audioBlob, 'voice_message.webm');
   
   // Append the JSON payload
-  const chatPayload = {
+  const chatPayload: Record<string, any> = {
     userApplicationId: config.myUserId,
     userConversationId,
     messageApplicationId: crypto.randomUUID(),
@@ -159,6 +167,10 @@ export async function sendClassicChatAudio(
     locale: 'fr',
     data: {},
   };
+
+  if (socraticTutoring) {
+    chatPayload.socratic_tutoring = true;
+  }
   
   formData.append('payload', JSON.stringify(chatPayload));
 

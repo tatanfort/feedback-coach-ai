@@ -4,7 +4,9 @@ import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, MessageSquare, Mic, MicOff } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Send, MessageSquare, Mic, MicOff, GraduationCap } from 'lucide-react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { cn } from '@/lib/utils';
 
@@ -14,9 +16,21 @@ interface ChatAreaProps {
   onSendMessage: (message: string) => void;
   onSendAudio?: (audioBlob: Blob) => void;
   placeholder?: string;
+  showSocraticToggle?: boolean;
+  socraticMode?: boolean;
+  onSocraticModeChange?: (enabled: boolean) => void;
 }
 
-export function ChatArea({ messages, isLoading, onSendMessage, onSendAudio, placeholder }: ChatAreaProps) {
+export function ChatArea({ 
+  messages, 
+  isLoading, 
+  onSendMessage, 
+  onSendAudio, 
+  placeholder,
+  showSocraticToggle = false,
+  socraticMode = false,
+  onSocraticModeChange 
+}: ChatAreaProps) {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -76,7 +90,33 @@ export function ChatArea({ messages, isLoading, onSendMessage, onSendAudio, plac
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-border bg-card p-4">
+      <div className="border-t border-border bg-card p-4 space-y-3">
+        {/* Socratic Mode Toggle */}
+        {showSocraticToggle && (
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <GraduationCap className={cn(
+                "h-4 w-4 transition-colors",
+                socraticMode ? "text-primary" : "text-muted-foreground"
+              )} />
+              <Label 
+                htmlFor="socratic-mode" 
+                className={cn(
+                  "text-sm font-medium cursor-pointer transition-colors",
+                  socraticMode ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                Mode Tuteur Socratique
+              </Label>
+            </div>
+            <Switch
+              id="socratic-mode"
+              checked={socraticMode}
+              onCheckedChange={onSocraticModeChange}
+            />
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex gap-3">
           <Input
             ref={inputRef}
