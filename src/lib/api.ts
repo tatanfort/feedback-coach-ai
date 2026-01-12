@@ -149,7 +149,7 @@ export async function sendClassicChatAudio(
   userConversationId: string,
   socraticTutoring: boolean = false
 ): Promise<{ message: string }> {
-  const url = `${config.apiBaseUrl}/chatbot/api/v2/chat`;
+  const url = `${config.apiBaseUrl}/chatbot/api/v2/chat_speech`;
   
   const formData = new FormData();
   
